@@ -1,0 +1,76 @@
+<h1 class="s360-titulo">Seguimiento</h1>
+<div class="s360-subtitulo mb-3">Seguimiento de las atenciones por paciente</div>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+<form class="row g-2 mb-3" [formGroup]="seleccion">
+  <div class="col-md-6">
+    <label class="form-label" for="pacienteId">Paciente</label>
+    <select id="pacienteId" class="form-select" formControlName="pacienteId">
+      <option [ngValue]="null">Seleccione un paciente</option>
+      <option *ngFor="let p of pacientes" [ngValue]="p.pacienteId">{{ p.nombreCompleto }} — {{ p.documento }}</option>
+    </select>
+  </div>
+</form>
+
+<div class="row g-3">
+  <div [ngClass]="puedeRegistrar ? 'col-lg-7' : 'col-12'">
+    <div class="s360-card p-3 h-100">
+      <h2 class="fs-6 fw-bold mb-3">Línea de tiempo</h2>
+      <p class="text-secondary small mb-0" *ngIf="!pacienteId">Seleccione un paciente para ver su seguimiento.</p>
+      <p class="text-secondary small mb-0" *ngIf="pacienteId && cargando">Cargando…</p>
+
+      <div *ngFor="let s of seguimientos" class="border-start border-3 ps-3 mb-3"
+           [ngClass]="s.estado === 'FINALIZADO' ? 'border-success' : 'border-warning'">
+        <div class="d-flex align-items-center gap-2">
+          <strong>{{ s.fecha | date: 'dd/MM/yyyy' }}</strong>
+          <span class="s360-badge" [ngClass]="s.estado">{{ s.estado === 'FINALIZADO' ? 'Finalizado' : 'En seguimiento' }}</span>
+        </div>
+        <div>{{ s.observaciones }}</div>
+        <div class="text-secondary small">{{ s.atencionCodigo }} · {{ s.atencionMotivo }} · {{ s.profesional }}</div>
+      </div>
+
+      <p class="text-secondary small mb-0" *ngIf="pacienteId && !cargando && seguimientos.length === 0">Sin resultados</p>
+    </div>
+  </div>
+
+  <div class="col-lg-5" *ngIf="puedeRegistrar">
+    <form class="s360-card p-3" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="fs-6 fw-bold mb-3">Registrar seguimiento</h2>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label" for="atencionId">Atención *</label>
+          <select id="atencionId" class="form-select" formControlName="atencionId" [class.is-invalid]="invalido('atencionId')">
+            <option [ngValue]="null">{{ pacienteId ? 'Seleccione la atención' : 'Elija primero un paciente' }}</option>
+            <option *ngFor="let a of atenciones" [ngValue]="a.atencionId">{{ a.codigo }} · {{ a.fecha | date: 'dd/MM/yyyy' }} · {{ a.motivo }}</option>
+          </select>
+          <div class="invalid-feedback">{{ erroresCampo['atencionId'] || 'Seleccione la atención' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="fecha">Fecha *</label>
+          <input id="fecha" type="date" class="form-control" formControlName="fecha" [max]="hoy" [class.is-invalid]="invalido('fecha')" />
+          <div class="invalid-feedback">{{ erroresCampo['fecha'] || 'La fecha es obligatoria y no puede ser futura' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="estado">Estado *</label>
+          <select id="estado" class="form-select" formControlName="estado">
+            <option value="EN_SEGUIMIENTO">En seguimiento</option>
+            <option value="FINALIZADO">Finalizado</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="observaciones">Observaciones *</label>
+          <textarea id="observaciones" rows="3" class="form-control" formControlName="observaciones" maxlength="500"
+                    [class.is-invalid]="invalido('observaciones')"></textarea>
+          <div class="invalid-feedback">{{ erroresCampo['observaciones'] || 'Las observaciones son obligatorias' }}</div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando || !pacienteId">
+          <i class="bi bi-check-lg"></i> Guardar seguimiento
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

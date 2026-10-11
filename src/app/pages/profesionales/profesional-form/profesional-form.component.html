@@ -1,0 +1,48 @@
+<h1 class="s360-titulo">Registrar profesional</h1>
+<div class="s360-subtitulo mb-3">Complete los datos del profesional. Los campos con * son obligatorios.</div>
+
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+<form class="s360-card p-3" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h2 class="fs-6 fw-bold mb-3">Datos del profesional</h2>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="nombres">Nombres *</label>
+      <input id="nombres" class="form-control" formControlName="nombres" [class.is-invalid]="invalido('nombres')" />
+      <div class="invalid-feedback">{{ erroresCampo['nombres'] || 'Los nombres son obligatorios' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="apellidos">Apellidos *</label>
+      <input id="apellidos" class="form-control" formControlName="apellidos" [class.is-invalid]="invalido('apellidos')" />
+      <div class="invalid-feedback">{{ erroresCampo['apellidos'] || 'Los apellidos son obligatorios' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="especialidadId">Especialidad *</label>
+      <select id="especialidadId" class="form-select" formControlName="especialidadId" [class.is-invalid]="invalido('especialidadId')">
+        <option [ngValue]="null">Seleccione la especialidad</option>
+        <option *ngFor="let e of especialidades" [ngValue]="e.id">{{ e.nombre }}</option>
+      </select>
+      <div class="invalid-feedback">{{ erroresCampo['especialidadId'] || 'Seleccione la especialidad' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="correo">Correo electrónico *</label>
+      <input id="correo" type="email" class="form-control" formControlName="correo" autocomplete="off" [class.is-invalid]="invalido('correo')" />
+      <div class="invalid-feedback">{{ erroresCampo['correo'] || 'Ingrese un correo electrónico válido' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="telefono">Teléfono</label>
+      <input id="telefono" class="form-control" formControlName="telefono" [class.is-invalid]="invalido('telefono')" />
+      <div class="invalid-feedback">{{ erroresCampo['telefono'] || 'El teléfono admite como máximo 15 caracteres' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="contrasena">Contraseña inicial * (mínimo 8 caracteres)</label>
+      <input id="contrasena" type="password" class="form-control" formControlName="contrasena" autocomplete="new-password" [class.is-invalid]="invalido('contrasena')" />
+      <div class="invalid-feedback">{{ erroresCampo['contrasena'] || 'La contraseña debe tener entre 8 y 60 caracteres' }}</div>
+    </div>
+  </div>
+  <p class="text-secondary small mt-3 mb-0"><i class="bi bi-info-circle"></i> Se creará su usuario de acceso con rol PROFESIONAL.</p>
+  <div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando">Guardar</button>
+    <a routerLink="/profesionales" class="btn btn-cancelar">Cancelar</a>
+  </div>
+</form>

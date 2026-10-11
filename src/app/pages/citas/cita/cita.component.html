@@ -1,0 +1,73 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="s360-titulo">Citas programadas</h1>
+    <div class="s360-subtitulo">Agenda de citas del centro por profesional, servicio y estado</div>
+  </div>
+  <a *ngIf="gestiona" routerLink="/citas/nueva" class="btn btn-s360"><i class="bi bi-plus-lg"></i> Nueva cita</a>
+</div>
+
+<form class="row g-2 mb-3" [formGroup]="filtros">
+  <div class="col-6 col-md-3">
+    <input type="date" class="form-control" formControlName="fecha" aria-label="Fecha" />
+  </div>
+  <div class="col-6 col-md-3">
+    <select class="form-select" formControlName="estado" aria-label="Estado">
+      <option value="">Estado: Todos</option>
+      <option value="PROGRAMADA">Programada</option>
+      <option value="CONFIRMADA">Confirmada</option>
+      <option value="ATENDIDA">Atendida</option>
+      <option value="CANCELADA">Cancelada</option>
+    </select>
+  </div>
+  <div class="col-12 col-md-4" *ngIf="gestiona">
+    <select class="form-select" formControlName="profesionalId" aria-label="Profesional">
+      <option value="">Profesional: Todos</option>
+      <option *ngFor="let p of profesionales" [value]="p.profesionalId">{{ p.nombreCompleto }}</option>
+    </select>
+  </div>
+</form>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error">{{ error }}</div>
+
+<div class="s360-card">
+  <div class="table-responsive">
+    <table class="table s360-tabla">
+      <thead>
+        <tr>
+          <th>Código</th><th>Paciente</th><th>Profesional</th><th>Servicio</th>
+          <th>Fecha</th><th>Hora</th><th>Estado</th><th *ngIf="gestiona">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of pagina?.contenido" [class.resaltada]="c.codigo === registrada">
+          <td class="fw-bold text-nowrap">{{ c.codigo }}</td>
+          <td>{{ c.paciente }}</td>
+          <td>{{ c.profesional }}</td>
+          <td>{{ c.servicio }}</td>
+          <td class="text-nowrap">{{ c.fecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ c.hora }}</td>
+          <td><span class="s360-badge" [ngClass]="c.estado">{{ c.estado | titlecase }}</span></td>
+          <td *ngIf="gestiona" class="text-nowrap">
+            <button type="button" class="btn btn-sm btn-link p-0 me-2" title="Confirmar" *ngIf="puedeConfirmar(c)" (click)="confirmar(c)">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <a [routerLink]="['/citas', c.citaId, 'editar']" class="btn btn-sm btn-link p-0 me-2" title="Reprogramar" *ngIf="esPendiente(c)">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-link text-danger p-0" title="Cancelar" *ngIf="esPendiente(c)" (click)="cancelar(c)">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="!cargando && pagina?.contenido?.length === 0">
+          <td [attr.colspan]="gestiona ? 8 : 7" class="text-center text-secondary py-4">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <app-paginacion *ngIf="pagina"
+    [pagina]="pagina.pagina" [tamanio]="pagina.tamanio"
+    [totalElementos]="pagina.totalElementos" [totalPaginas]="pagina.totalPaginas"
+    etiqueta="citas" (cambiarPagina)="irA($event)"></app-paginacion>
+</div>

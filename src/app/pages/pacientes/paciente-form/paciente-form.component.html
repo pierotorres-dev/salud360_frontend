@@ -1,0 +1,55 @@
+<h1 class="s360-titulo">{{ id ? 'Editar paciente' : 'Registrar paciente' }}</h1>
+<div class="s360-subtitulo mb-3">Complete los datos del paciente. Los campos con * son obligatorios.</div>
+
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+<form class="s360-card p-3" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h2 class="fs-6 fw-bold mb-3">Datos del paciente</h2>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="documento">Documento de identificación *</label>
+      <input id="documento" class="form-control" formControlName="documento" maxlength="8"
+             [class.is-invalid]="invalido('documento')" [class.is-valid]="form.controls.documento.valid && !erroresCampo['documento']" />
+      <div class="invalid-feedback">{{ erroresCampo['documento'] || 'El documento debe tener 8 dígitos' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fechaNacimiento">Fecha de nacimiento *</label>
+      <input id="fechaNacimiento" type="date" class="form-control" formControlName="fechaNacimiento" [max]="hoy"
+             [class.is-invalid]="invalido('fechaNacimiento')" />
+      <div class="invalid-feedback">{{ erroresCampo['fechaNacimiento'] || 'La fecha de nacimiento es obligatoria' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="nombres">Nombres *</label>
+      <input id="nombres" class="form-control" formControlName="nombres" [class.is-invalid]="invalido('nombres')" />
+      <div class="invalid-feedback">{{ erroresCampo['nombres'] || 'Los nombres son obligatorios' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="apellidos">Apellidos *</label>
+      <input id="apellidos" class="form-control" formControlName="apellidos" [class.is-invalid]="invalido('apellidos')" />
+      <div class="invalid-feedback">{{ erroresCampo['apellidos'] || 'Los apellidos son obligatorios' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="telefono">Teléfono *</label>
+      <input id="telefono" class="form-control" formControlName="telefono" [class.is-invalid]="invalido('telefono')" />
+      <div class="invalid-feedback">{{ erroresCampo['telefono'] || 'El teléfono es obligatorio' }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="correo">Correo electrónico *</label>
+      <input id="correo" type="email" class="form-control" formControlName="correo" [class.is-invalid]="invalido('correo')" />
+      <div class="invalid-feedback">{{ erroresCampo['correo'] || 'Ingrese un correo electrónico válido' }}</div>
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="direccion">Dirección</label>
+      <input id="direccion" class="form-control" formControlName="direccion" />
+    </div>
+    <div class="col-12">
+      <span class="form-label d-block">Estado del registro</span>
+      <label class="me-3"><input type="radio" class="form-check-input" formControlName="estado" value="ACTIVO" /> Activo</label>
+      <label><input type="radio" class="form-check-input" formControlName="estado" value="INACTIVO" /> Inactivo</label>
+    </div>
+  </div>
+  <div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando">Guardar</button>
+    <a routerLink="/pacientes" class="btn btn-cancelar">Cancelar</a>
+  </div>
+</form>

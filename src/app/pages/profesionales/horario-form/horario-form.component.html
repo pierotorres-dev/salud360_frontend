@@ -1,0 +1,50 @@
+<h1 class="s360-titulo">Horarios de atención</h1>
+<div class="s360-subtitulo mb-3" *ngIf="profesional">
+  {{ profesional.nombreCompleto }} · {{ profesional.especialidad }}
+</div>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+<p class="text-secondary" *ngIf="cargando">Cargando…</p>
+
+<form class="s360-card p-3" *ngIf="profesional" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <h2 class="fs-6 fw-bold mb-1">Días y horas de atención</h2>
+  <p class="text-secondary small mb-3">
+    Marque los días en que atiende y elija la hora de inicio y fin (bloques de 30 minutos). Los días sin marcar quedan sin atención.
+  </p>
+  <div class="table-responsive">
+    <table class="table s360-tabla align-middle">
+      <thead><tr><th>Día</th><th>Atiende</th><th>Hora de inicio</th><th>Hora de fin</th><th></th></tr></thead>
+      <tbody formArrayName="filas">
+        <tr *ngFor="let fila of filas.controls; let i = index" [formGroupName]="i">
+          <td class="fw-bold">{{ dias[i].nombre }}</td>
+          <td>
+            <div class="form-check form-switch m-0">
+              <input class="form-check-input" type="checkbox" role="switch" formControlName="atiende" [id]="'atiende-' + i" />
+              <label class="form-check-label" [for]="'atiende-' + i">Atiende</label>
+            </div>
+          </td>
+          <td>
+            <select class="form-select form-select-sm" formControlName="horaInicio" [attr.aria-label]="'Hora de inicio ' + dias[i].nombre"
+                    [class.is-invalid]="fila.errors?.['rango']">
+              <option *ngFor="let h of horas" [value]="h">{{ h }}</option>
+            </select>
+          </td>
+          <td>
+            <select class="form-select form-select-sm" formControlName="horaFin" [attr.aria-label]="'Hora de fin ' + dias[i].nombre"
+                    [class.is-invalid]="fila.errors?.['rango']">
+              <option *ngFor="let h of horas" [value]="h">{{ h }}</option>
+            </select>
+          </td>
+          <td class="text-danger small">
+            <span *ngIf="fila.errors?.['rango']">La hora de inicio debe ser menor que la de fin</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-3 d-flex gap-2">
+    <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando">Guardar horarios</button>
+    <a routerLink="/profesionales" class="btn btn-cancelar">Cancelar</a>
+  </div>
+</form>

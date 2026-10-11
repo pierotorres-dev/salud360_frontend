@@ -1,0 +1,62 @@
+<div class="s360-login">
+  <section class="s360-login-panel">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <span class="s360-logo-icono" style="width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,.18)">
+        <i class="bi bi-heart-fill fs-4"></i>
+      </span>
+      <h1 class="fw-bold m-0">Salud 360</h1>
+    </div>
+    <p class="fs-5 mb-4" style="max-width:520px">
+      Gestión integral de atención, citas y seguimiento de pacientes del Centro Integral de Salud.
+    </p>
+    <ul class="list-unstyled d-grid gap-2">
+      <li>▪ Registro centralizado de pacientes y profesionales</li>
+      <li>▪ Programación de citas según disponibilidad</li>
+      <li>▪ Seguimiento de las atenciones realizadas</li>
+    </ul>
+  </section>
+
+  <section class="s360-login-form">
+    <form class="s360-login-card" [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+      <h2 class="fw-bold mb-0" style="font-size:1.5rem">Iniciar sesión</h2>
+      <p class="text-secondary small mb-3">Ingrese sus credenciales para continuar</p>
+
+      <div class="alert s360-alerta-error py-2 small" *ngIf="error">{{ error }}</div>
+      <div class="alert alert-info py-2 small" *ngIf="info">{{ info }}</div>
+
+      <label class="form-label" for="correo">Usuario / correo electrónico</label>
+      <div class="input-group mb-1">
+        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+        <input id="correo" type="email" class="form-control" formControlName="correo"
+               autocomplete="username" [class.is-invalid]="invalido('correo')" />
+      </div>
+      <div class="text-danger small mb-2" *ngIf="invalido('correo')">
+        {{ erroresCampo['correo'] || 'Ingrese un correo electrónico válido' }}
+      </div>
+
+      <label class="form-label mt-2" for="contrasena">Contraseña</label>
+      <div class="input-group mb-1">
+        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+        <input id="contrasena" type="password" class="form-control" formControlName="contrasena"
+               autocomplete="current-password" [class.is-invalid]="invalido('contrasena')" />
+      </div>
+      <div class="text-danger small mb-2" *ngIf="invalido('contrasena')">
+        {{ erroresCampo['contrasena'] || 'La contraseña es obligatoria' }}
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center my-2 small">
+        <label class="form-check-label d-flex gap-1 align-items-center">
+          <input type="checkbox" class="form-check-input mt-0" formControlName="recordarme" /> Recordarme
+        </label>
+        <a href="" (click)="$event.preventDefault(); olvido()">¿Olvidó su contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn btn-s360 w-100 py-2" [disabled]="cargando">
+        <span *ngIf="cargando" class="spinner-border spinner-border-sm me-1"></span>Ingresar
+      </button>
+      <p class="text-center text-secondary mt-3 mb-0" style="font-size:.72rem">
+        <i class="bi bi-shield-check"></i> Acceso protegido con autenticación JWT
+      </p>
+    </form>
+  </section>
+</div>

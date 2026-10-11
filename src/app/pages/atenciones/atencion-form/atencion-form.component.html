@@ -1,0 +1,58 @@
+<h1 class="s360-titulo">Registrar atención</h1>
+<div class="s360-subtitulo mb-3">Registre la atención realizada al paciente. Los campos con * son obligatorios.</div>
+
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <form class="s360-card p-3" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="fs-6 fw-bold mb-3">Datos de la atención</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="pacienteId">Paciente *</label>
+          <select id="pacienteId" class="form-select" formControlName="pacienteId" [class.is-invalid]="invalido('pacienteId')">
+            <option [ngValue]="null">Seleccione el paciente</option>
+            <option *ngFor="let p of pacientes" [ngValue]="p.pacienteId">{{ p.nombreCompleto }}</option>
+          </select>
+          <div class="invalid-feedback">{{ erroresCampo['pacienteId'] || 'Seleccione el paciente' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="profesional">Profesional *</label>
+          <input id="profesional" class="form-control" [value]="profesionalSesion" disabled />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="fecha">Fecha *</label>
+          <input id="fecha" type="date" class="form-control" formControlName="fecha" [max]="hoy" [class.is-invalid]="invalido('fecha')" />
+          <div class="invalid-feedback">{{ erroresCampo['fecha'] || 'La fecha de la atención es obligatoria y no puede ser futura' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="estadoSeguimiento">Estado de seguimiento</label>
+          <select id="estadoSeguimiento" class="form-select" formControlName="estadoSeguimiento">
+            <option value="">Sin seguimiento</option>
+            <option value="EN_SEGUIMIENTO">En seguimiento</option>
+            <option value="FINALIZADO">Finalizado</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="motivo">Motivo *</label>
+          <input id="motivo" class="form-control" formControlName="motivo" maxlength="200" [class.is-invalid]="invalido('motivo')" />
+          <div class="invalid-feedback">{{ erroresCampo['motivo'] || 'El motivo es obligatorio' }}</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="observaciones">Observaciones</label>
+          <textarea id="observaciones" rows="4" class="form-control" formControlName="observaciones" maxlength="500"
+                    [class.is-invalid]="invalido('observaciones')"></textarea>
+          <div class="invalid-feedback">{{ erroresCampo['observaciones'] || 'Las observaciones admiten como máximo 500 caracteres' }}</div>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando"><i class="bi bi-check-lg"></i> Guardar atención</button>
+        <a routerLink="/atenciones" class="btn btn-cancelar">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="col-lg-5">
+    <app-historial-paciente [paciente]="pacienteSeleccionado"></app-historial-paciente>
+  </div>
+</div>

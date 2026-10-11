@@ -1,0 +1,67 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="s360-titulo">Pacientes</h1>
+    <div class="s360-subtitulo">Consulta y administración de pacientes registrados</div>
+  </div>
+  <a routerLink="/pacientes/nuevo" class="btn btn-s360"><i class="bi bi-plus-lg"></i> Registrar paciente</a>
+</div>
+
+<form class="row g-2 mb-3" [formGroup]="filtros">
+  <div class="col-md-5">
+    <div class="input-group">
+      <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+      <input class="form-control" formControlName="buscar" placeholder="Buscar por documento, nombres o apellidos" />
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <select class="form-select" formControlName="estado" aria-label="Estado">
+      <option value="">Estado: Todos</option>
+      <option value="ACTIVO">Activo</option>
+      <option value="INACTIVO">Inactivo</option>
+    </select>
+  </div>
+  <div class="col-6 col-md-3">
+    <select class="form-select" formControlName="orden" aria-label="Ordenar">
+      <option value="apellidos">Ordenar: Apellidos</option>
+      <option value="documento">Ordenar: Documento</option>
+      <option value="recientes">Ordenar: Más recientes</option>
+    </select>
+  </div>
+</form>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error">{{ error }}</div>
+
+<div class="s360-card">
+  <div class="table-responsive">
+    <table class="table s360-tabla">
+      <thead>
+        <tr>
+          <th>Documento</th><th>Paciente</th><th>Fecha nac.</th><th>Teléfono</th>
+          <th>Correo electrónico</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of pagina?.contenido">
+          <td class="fw-bold">{{ p.documento }}</td>
+          <td>{{ p.nombreCompleto }}</td>
+          <td>{{ p.fechaNacimiento | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ p.telefono }}</td>
+          <td>{{ p.correo }}</td>
+          <td><span class="s360-badge" [ngClass]="p.estado">{{ p.estado === 'ACTIVO' ? 'Activo' : 'Inactivo' }}</span></td>
+          <td class="text-nowrap">
+            <a [routerLink]="['/pacientes', p.pacienteId]" class="btn btn-sm btn-link p-0 me-2" title="Ver"><i class="bi bi-eye"></i></a>
+            <a [routerLink]="['/pacientes', p.pacienteId, 'editar']" class="btn btn-sm btn-link p-0" title="Editar"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        <tr *ngIf="!cargando && pagina?.contenido?.length === 0">
+          <td colspan="7" class="text-center text-secondary py-4">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <app-paginacion *ngIf="pagina"
+    [pagina]="pagina.pagina" [tamanio]="pagina.tamanio"
+    [totalElementos]="pagina.totalElementos" [totalPaginas]="pagina.totalPaginas"
+    etiqueta="pacientes" (cambiarPagina)="irA($event)"></app-paginacion>
+</div>

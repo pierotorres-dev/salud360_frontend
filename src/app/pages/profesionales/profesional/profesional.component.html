@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="s360-titulo">Profesionales</h1>
+    <div class="s360-subtitulo">Profesionales de salud, especialidades y horarios de atención</div>
+  </div>
+  <a *ngIf="esAdmin" routerLink="/profesionales/nuevo" class="btn btn-s360"><i class="bi bi-plus-lg"></i> Registrar profesional</a>
+</div>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error">{{ error }}</div>
+
+<div class="s360-card">
+  <div class="table-responsive">
+    <table class="table s360-tabla">
+      <thead>
+        <tr>
+          <th>Profesional</th><th>Especialidad</th><th>Correo electrónico</th><th>Teléfono</th>
+          <th>Horario</th><th>Estado</th><th *ngIf="esAdmin">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of profesionales">
+          <td class="fw-bold">{{ p.nombreCompleto }}</td>
+          <td>{{ p.especialidad }}</td>
+          <td>{{ p.correo }}</td>
+          <td class="text-nowrap">{{ p.telefono || '—' }}</td>
+          <td>
+            <span *ngFor="let h of p.horarios" class="badge bg-light border text-dark fw-normal me-1 mb-1">
+              {{ abreviaturaDia(h.diaSemana) }} {{ h.horaInicio }}–{{ h.horaFin }}
+            </span>
+            <span *ngIf="p.horarios.length === 0" class="text-secondary">Sin horario</span>
+          </td>
+          <td><span class="s360-badge" [ngClass]="p.activo ? 'ACTIVO' : 'INACTIVO'">{{ p.activo ? 'Activo' : 'Inactivo' }}</span></td>
+          <td *ngIf="esAdmin" class="text-nowrap">
+            <a [routerLink]="['/profesionales', p.profesionalId, 'horarios']" class="btn btn-sm btn-outline-primary" title="Horarios">
+              <i class="bi bi-clock"></i> Horarios
+            </a>
+          </td>
+        </tr>
+        <tr *ngIf="!cargando && profesionales.length === 0">
+          <td [attr.colspan]="esAdmin ? 7 : 6" class="text-center text-secondary py-4">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

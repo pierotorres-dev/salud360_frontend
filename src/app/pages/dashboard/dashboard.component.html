@@ -1,0 +1,69 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="s360-titulo">Panel principal</h1>
+    <div class="s360-subtitulo">Resumen en tiempo real · {{ periodo }}</div>
+  </div>
+  <a *ngIf="puedeCrearCita" routerLink="/citas/nueva" class="btn btn-s360"><i class="bi bi-plus-lg"></i> Nueva cita</a>
+</div>
+
+<div class="alert s360-alerta-error" *ngIf="error">{{ error }}</div>
+
+<ng-container *ngIf="resumen as r">
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Pacientes registrados" [valor]="r.pacientesRegistrados" detalle="Total en el sistema" color="azul"></app-kpi-card></div>
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Citas programadas" [valor]="r.citasProgramadas" detalle="Pendientes desde hoy" color="naranja"></app-kpi-card></div>
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Atenciones realizadas" [valor]="r.atencionesRealizadas" detalle="Últimos 30 días" color="morado"></app-kpi-card></div>
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Profesionales activos" [valor]="r.profesionalesActivos" detalle="Con horario asignado" color="verde"></app-kpi-card></div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="s360-card h-100">
+        <h2 class="s360-card-titulo">Últimas citas registradas</h2>
+        <div class="table-responsive">
+          <table class="table s360-tabla">
+            <thead><tr><th>Paciente</th><th>Profesional</th><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of r.ultimasCitas">
+                <td>{{ c.paciente }}</td>
+                <td>{{ c.profesional }}</td>
+                <td>{{ c.fecha | date: 'dd/MM' }} · {{ c.hora }}</td>
+                <td><span class="s360-badge" [ngClass]="c.estado">{{ c.estado | titlecase }}</span></td>
+              </tr>
+              <tr *ngIf="r.ultimasCitas.length === 0"><td colspan="4" class="text-center text-secondary py-4">Sin resultados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="s360-card h-100 p-3">
+        <h2 class="fs-6 fw-bold">Atenciones por servicio</h2>
+        <div class="d-flex align-items-center gap-3 mt-2">
+          <div class="s360-dona" [style.background]="fondoDona">
+            <div class="s360-dona-centro">
+              <div><div class="fw-bold fs-4 lh-1">{{ totalAtenciones }}</div><div class="text-secondary" style="font-size:.7rem">atenciones</div></div>
+            </div>
+          </div>
+          <ul class="list-unstyled small mb-0">
+            <li *ngFor="let s of r.atencionesPorServicio; let i = index">
+              <span [style.color]="color(i)">●</span> {{ s.etiqueta }} {{ porcentaje(s) }}%
+            </li>
+            <li *ngIf="r.atencionesPorServicio.length === 0" class="text-secondary">Sin resultados</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s360-card p-3">
+    <h2 class="fs-6 fw-bold">Citas pendientes por día</h2>
+    <div class="s360-barras mt-3">
+      <div class="s360-barra" *ngFor="let d of r.citasPorDia">
+        <small class="fw-bold">{{ d.cantidad }}</small>
+        <div class="s360-barra-relleno" [style.height.%]="alturaBarra(d)"></div>
+        <small class="text-secondary mt-1">{{ d.etiqueta }}</small>
+      </div>
+    </div>
+  </div>
+</ng-container>

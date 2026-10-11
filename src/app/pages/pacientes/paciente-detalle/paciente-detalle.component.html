@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="s360-titulo">{{ vistaPaciente ? 'Mi información' : 'Detalle del paciente' }}</h1>
+    <div class="s360-subtitulo">
+      {{ vistaPaciente ? 'Sus datos personales, citas e historial de atenciones' : 'Datos personales, citas e historial de atenciones del paciente' }}
+    </div>
+  </div>
+  <a *ngIf="puedeGestionar" routerLink="/pacientes" class="btn btn-cancelar"><i class="bi bi-arrow-left"></i> Volver</a>
+</div>
+
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+<p class="text-secondary" *ngIf="cargando">Cargando…</p>
+
+<ng-container *ngIf="paciente">
+  <div class="row g-3 mb-3">
+    <div class="col-lg-5">
+      <div class="s360-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="fs-6 fw-bold m-0">Datos del paciente</h2>
+          <span class="s360-badge" [ngClass]="paciente.estado">{{ paciente.estado === 'ACTIVO' ? 'Activo' : 'Inactivo' }}</span>
+        </div>
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-secondary">Documento</dt><dd class="col-7 fw-bold">{{ paciente.documento }}</dd>
+          <dt class="col-5 text-secondary">Paciente</dt><dd class="col-7">{{ paciente.nombreCompleto }}</dd>
+          <dt class="col-5 text-secondary">Fecha de nacimiento</dt><dd class="col-7">{{ paciente.fechaNacimiento | date: 'dd/MM/yyyy' }}</dd>
+          <dt class="col-5 text-secondary">Teléfono</dt><dd class="col-7">{{ paciente.telefono }}</dd>
+          <dt class="col-5 text-secondary">Correo electrónico</dt><dd class="col-7 text-break">{{ paciente.correo }}</dd>
+          <dt class="col-5 text-secondary">Dirección</dt><dd class="col-7">{{ paciente.direccion || '—' }}</dd>
+          <ng-container *ngIf="puedeGestionar">
+            <dt class="col-5 text-secondary">Cuenta de acceso</dt><dd class="col-7">{{ paciente.tieneUsuario ? 'Sí' : 'No' }}</dd>
+          </ng-container>
+        </dl>
+        <div class="mt-3 d-flex gap-2" *ngIf="puedeGestionar">
+          <a [routerLink]="['/pacientes', paciente.pacienteId, 'editar']" class="btn btn-s360 btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+          <a routerLink="/citas/nueva" [queryParams]="{ pacienteId: paciente.pacienteId }" class="btn btn-guardar btn-sm"><i class="bi bi-calendar-plus"></i> Nueva cita</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="s360-card h-100">
+        <h2 class="s360-card-titulo">Citas</h2>
+        <div class="table-responsive">
+          <table class="table s360-tabla">
+            <thead><tr><th>Código</th><th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of citas">
+                <td class="fw-bold">{{ c.codigo }}</td>
+                <td>{{ c.fecha | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ c.hora }}</td>
+                <td>{{ c.profesional }}</td>
+                <td>{{ c.servicio }}</td>
+                <td><span class="s360-badge" [ngClass]="c.estado">{{ c.estado | titlecase }}</span></td>
+              </tr>
+              <tr *ngIf="citas.length === 0"><td colspan="6" class="text-center text-secondary py-4">Sin resultados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-historial-paciente *ngIf="verHistorial" [paciente]="paciente"></app-historial-paciente>
+</ng-container>

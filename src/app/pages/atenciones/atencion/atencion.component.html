@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="s360-titulo">Atenciones</h1>
+    <div class="s360-subtitulo">Atenciones realizadas a los pacientes</div>
+  </div>
+  <a *ngIf="esProfesional" routerLink="/atenciones/nueva" class="btn btn-s360"><i class="bi bi-plus-lg"></i> Registrar atención</a>
+</div>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error">{{ error }}</div>
+
+<div class="s360-card">
+  <div class="table-responsive">
+    <table class="table s360-tabla">
+      <thead>
+        <tr>
+          <th>Código</th><th>Fecha</th><th>Paciente</th><th>Profesional</th>
+          <th>Servicio</th><th>Cita</th><th>Motivo</th><th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of pagina?.contenido">
+          <td class="fw-bold text-nowrap">{{ a.codigo }}</td>
+          <td class="text-nowrap">{{ a.fecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ a.paciente }}</td>
+          <td>{{ a.profesional }}</td>
+          <td>{{ a.servicio || '—' }}</td>
+          <td class="text-nowrap">{{ a.citaCodigo || '—' }}</td>
+          <td>{{ a.motivo }}</td>
+          <td class="text-nowrap">
+            <a routerLink="/seguimiento" [queryParams]="{ pacienteId: a.pacienteId }" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-journal-medical"></i> Seguimiento
+            </a>
+          </td>
+        </tr>
+        <tr *ngIf="!cargando && pagina?.contenido?.length === 0">
+          <td colspan="8" class="text-center text-secondary py-4">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <app-paginacion *ngIf="pagina"
+    [pagina]="pagina.pagina" [tamanio]="pagina.tamanio"
+    [totalElementos]="pagina.totalElementos" [totalPaginas]="pagina.totalPaginas"
+    etiqueta="atenciones" (cambiarPagina)="irA($event)"></app-paginacion>
+</div>

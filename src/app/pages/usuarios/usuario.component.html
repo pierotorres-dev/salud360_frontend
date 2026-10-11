@@ -1,0 +1,78 @@
+<h1 class="s360-titulo">Usuarios</h1>
+<div class="s360-subtitulo mb-3">Cuentas de acceso y roles del sistema</div>
+
+<div class="alert s360-alerta-ok" *ngIf="mensaje"><i class="bi bi-check-lg"></i> {{ mensaje }}</div>
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div class="s360-card">
+      <div class="table-responsive">
+        <table class="table s360-tabla">
+          <thead>
+            <tr><th>Nombre</th><th>Correo electrónico</th><th>Rol</th><th>Estado</th><th>Creado</th><th>Acción</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuarios">
+              <td class="fw-bold">{{ u.nombre }}</td>
+              <td>{{ u.correo }}</td>
+              <td>{{ u.rol | titlecase }}</td>
+              <td><span class="s360-badge" [ngClass]="u.activo ? 'ACTIVO' : 'INACTIVO'">{{ u.activo ? 'Activo' : 'Inactivo' }}</span></td>
+              <td>{{ u.fechaCreacion | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-nowrap">
+                <button type="button" class="btn btn-sm" [ngClass]="u.activo ? 'btn-outline-danger' : 'btn-outline-success'"
+                        [disabled]="u.usuarioId === usuarioActualId"
+                        [attr.title]="u.usuarioId === usuarioActualId ? 'No puede desactivar su propio usuario' : null"
+                        (click)="cambiarEstado(u)">
+                  {{ u.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="!cargando && usuarios.length === 0"><td colspan="6" class="text-center text-secondary py-4">Sin resultados</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <form class="s360-card p-3" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="fs-6 fw-bold mb-3">Nuevo usuario</h2>
+      <div class="mb-3">
+        <label class="form-label" for="nombre">Nombre *</label>
+        <input id="nombre" class="form-control" formControlName="nombre" [class.is-invalid]="invalido('nombre')" />
+        <div class="invalid-feedback">{{ erroresCampo['nombre'] || 'El nombre es obligatorio' }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="correo">Correo electrónico *</label>
+        <input id="correo" type="email" class="form-control" formControlName="correo" autocomplete="off" [class.is-invalid]="invalido('correo')" />
+        <div class="invalid-feedback">{{ erroresCampo['correo'] || 'Ingrese un correo electrónico válido' }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="contrasena">Contraseña * (mínimo 8 caracteres)</label>
+        <input id="contrasena" type="password" class="form-control" formControlName="contrasena" autocomplete="new-password" [class.is-invalid]="invalido('contrasena')" />
+        <div class="invalid-feedback">{{ erroresCampo['contrasena'] || 'La contraseña debe tener entre 8 y 60 caracteres' }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="rol">Rol *</label>
+        <select id="rol" class="form-select" formControlName="rol" [class.is-invalid]="invalido('rol')">
+          <option value="">Seleccione el rol</option>
+          <option value="ADMINISTRADOR">Administrador</option>
+          <option value="RECEPCIONISTA">Recepcionista</option>
+          <option value="PACIENTE">Paciente</option>
+        </select>
+        <div class="invalid-feedback">{{ erroresCampo['rol'] || 'Seleccione el rol' }}</div>
+      </div>
+      <div class="mb-3" *ngIf="esPaciente">
+        <label class="form-label" for="pacienteId">Paciente *</label>
+        <select id="pacienteId" class="form-select" formControlName="pacienteId" [class.is-invalid]="invalido('pacienteId')">
+          <option [ngValue]="null">Seleccione el paciente</option>
+          <option *ngFor="let p of pacientesSinCuenta" [ngValue]="p.pacienteId">{{ p.nombreCompleto }} — {{ p.documento }}</option>
+        </select>
+        <div class="invalid-feedback">{{ erroresCampo['pacienteId'] || 'Seleccione el paciente que usará la cuenta' }}</div>
+      </div>
+      <p class="text-secondary small">Los usuarios con rol Profesional se crean desde el módulo Profesionales.</p>
+      <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando">Crear usuario</button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<h1 class="s360-titulo">{{ id ? 'Reprogramar cita' : 'Nueva cita' }}</h1>
+<div class="s360-subtitulo mb-3">
+  {{ id ? 'Elija la nueva fecha y hora de la cita' : 'Programe una cita seleccionando profesional, servicio, fecha y horario disponible.' }}
+  Los campos con * son obligatorios.
+</div>
+
+<div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <form class="s360-card p-3" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="fs-6 fw-bold mb-3">Datos de la cita</h2>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label" for="pacienteId">Paciente *</label>
+          <select id="pacienteId" class="form-select" formControlName="pacienteId" [class.is-invalid]="invalido('pacienteId')">
+            <option [ngValue]="null">Seleccione el paciente</option>
+            <option *ngFor="let p of pacientes" [ngValue]="p.pacienteId">{{ p.nombreCompleto }} — {{ p.documento }}</option>
+          </select>
+          <div class="invalid-feedback">{{ erroresCampo['pacienteId'] || 'Seleccione el paciente' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="servicioId">Servicio *</label>
+          <select id="servicioId" class="form-select" formControlName="servicioId" [class.is-invalid]="invalido('servicioId')">
+            <option [ngValue]="null">Seleccione el servicio</option>
+            <option *ngFor="let s of servicios" [ngValue]="s.id">{{ s.nombre }}</option>
+          </select>
+          <div class="invalid-feedback">{{ erroresCampo['servicioId'] || 'Seleccione el servicio' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="profesionalId">Profesional *</label>
+          <select id="profesionalId" class="form-select" formControlName="profesionalId" [class.is-invalid]="invalido('profesionalId')">
+            <option [ngValue]="null">Seleccione el profesional</option>
+            <option *ngFor="let p of profesionales" [ngValue]="p.profesionalId">{{ p.nombreCompleto }} — {{ p.especialidad }}</option>
+          </select>
+          <div class="invalid-feedback">{{ erroresCampo['profesionalId'] || 'Seleccione el profesional' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="fecha">Fecha *</label>
+          <input id="fecha" type="date" class="form-control" formControlName="fecha" [min]="hoy" [class.is-invalid]="invalido('fecha')" />
+          <div class="invalid-feedback">{{ erroresCampo['fecha'] || 'La fecha es obligatoria' }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="hora">Hora *</label>
+          <select id="hora" class="form-select" formControlName="hora" [class.is-invalid]="invalido('hora')">
+            <option value="">{{ disponibilidad ? 'Seleccione la hora' : 'Elija profesional y fecha' }}</option>
+            <option *ngFor="let s of horasOfrecidas" [value]="s.hora">{{ etiquetaHora(s) }}</option>
+          </select>
+          <div class="invalid-feedback">{{ erroresCampo['hora'] || 'La hora es obligatoria' }}</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="motivo">Motivo de consulta *</label>
+          <textarea id="motivo" rows="3" class="form-control" formControlName="motivo" maxlength="200" [class.is-invalid]="invalido('motivo')"></textarea>
+          <div class="invalid-feedback">{{ erroresCampo['motivo'] || 'El motivo es obligatorio' }}</div>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label" for="estadoCita">Estado de la cita</label>
+          <input id="estadoCita" class="form-control" value="Programada" disabled />
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-guardar" [disabled]="form.invalid || guardando"><i class="bi bi-check-lg"></i> Guardar cita</button>
+        <a routerLink="/citas" class="btn btn-cancelar">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="s360-card p-3">
+      <h2 class="fs-6 fw-bold mb-1">
+        Disponibilidad<ng-container *ngIf="form.controls.fecha.value"> · {{ form.controls.fecha.value | date: 'dd/MM/yyyy' }}</ng-container>
+      </h2>
+      <p class="text-secondary small mb-0" *ngIf="!disponibilidad && !cargandoDisponibilidad && !errorDisponibilidad">
+        Seleccione el profesional y la fecha para ver los horarios disponibles.
+      </p>
+      <p class="text-secondary small mb-0" *ngIf="cargandoDisponibilidad">Consultando disponibilidad…</p>
+      <p class="text-danger small mb-0" *ngIf="errorDisponibilidad">{{ errorDisponibilidad }}</p>
+
+      <ng-container *ngIf="disponibilidad as d">
+        <p class="text-secondary small mb-2" *ngIf="d.slots.length > 0">
+          {{ d.profesional }} · {{ d.especialidad }} · {{ d.horaInicio }}–{{ d.horaFin }}
+        </p>
+        <p class="text-secondary small mb-2" *ngIf="d.slots.length === 0">
+          {{ d.profesional }} · {{ d.especialidad }} · No atiende este día
+        </p>
+        <div class="row g-2">
+          <div class="col-3" *ngFor="let s of d.slots">
+            <button type="button" class="s360-slot" [ngClass]="s.estado" [class.elegido]="s.hora === form.controls.hora.value"
+                    [disabled]="s.estado !== 'LIBRE'" (click)="elegir(s)"
+                    [attr.title]="s.estado === 'OCUPADO' ? 'Ocupado (' + s.citaCodigo + ')' : null">
+              {{ s.hora }}
+            </button>
+          </div>
+        </div>
+        <p class="small text-secondary mt-3 mb-0" *ngIf="d.slots.length > 0">
+          <span>▫ Libre</span>
+          <span class="ms-3 text-danger">■ Ocupado</span>
+          <ng-container *ngFor="let s of d.slots"><span *ngIf="s.estado === 'OCUPADO'" class="text-danger"> ({{ s.citaCodigo }})</span></ng-container>
+        </p>
+      </ng-container>
+    </div>
+  </div>
+</div>

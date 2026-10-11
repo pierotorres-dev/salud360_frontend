@@ -1,0 +1,159 @@
+<div class="no-print">
+  <h1 class="s360-titulo">Módulo de reportes</h1>
+  <div class="s360-subtitulo mb-3">Seleccione el reporte que desea consultar y exportar.</div>
+
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <button type="button" class="s360-tab" [class.activa]="tab === 'citas'" (click)="cambiarTab('citas')">Citas por periodo</button>
+    <button type="button" class="s360-tab" [class.activa]="tab === 'atenciones'" (click)="cambiarTab('atenciones')">Atenciones realizadas</button>
+    <button type="button" class="s360-tab" [class.activa]="tab === 'indicadores'" (click)="cambiarTab('indicadores')">Indicadores generales</button>
+  </div>
+
+  <form class="s360-card p-3 mb-3" [formGroup]="filtros" (ngSubmit)="consultar()">
+    <h2 class="fs-6 fw-bold mb-2">Criterios de búsqueda</h2>
+    <div class="row g-3 align-items-end">
+      <div class="col-sm-6 col-lg-3">
+        <label class="form-label" for="desde">Desde</label>
+        <input id="desde" type="date" class="form-control" formControlName="desde" [class.is-invalid]="filtros.controls.desde.invalid && filtros.controls.desde.touched" />
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <label class="form-label" for="hasta">Hasta</label>
+        <input id="hasta" type="date" class="form-control" formControlName="hasta" [class.is-invalid]="filtros.controls.hasta.invalid && filtros.controls.hasta.touched" />
+      </div>
+      <ng-container *ngIf="tab !== 'indicadores'">
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="profesionalId">Profesional</label>
+          <select id="profesionalId" class="form-select" formControlName="profesionalId">
+            <option value="">Todos</option>
+            <option *ngFor="let p of profesionales" [value]="p.profesionalId">{{ p.nombreCompleto }}</option>
+          </select>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <label class="form-label" for="servicioId">Servicio</label>
+          <select id="servicioId" class="form-select" formControlName="servicioId">
+            <option value="">Todos</option>
+            <option *ngFor="let s of servicios" [value]="s.id">{{ s.nombre }}</option>
+          </select>
+        </div>
+      </ng-container>
+      <div class="col-sm-6 col-lg-3" *ngIf="tab === 'citas'">
+        <label class="form-label" for="estado">Estado</label>
+        <select id="estado" class="form-select" formControlName="estado">
+          <option value="">Todos</option>
+          <option value="PROGRAMADA">Programada</option>
+          <option value="CONFIRMADA">Confirmada</option>
+          <option value="ATENDIDA">Atendida</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <button type="submit" class="btn btn-s360" [disabled]="filtros.invalid || cargando">
+          <span *ngIf="cargando" class="spinner-border spinner-border-sm me-1"></span><i *ngIf="!cargando" class="bi bi-search"></i> Consultar
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div class="alert s360-alerta-error" *ngIf="error"><i class="bi bi-x-lg"></i> {{ error }}</div>
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <span class="s360-resultados" *ngIf="tab !== 'indicadores'">Resultados: {{ totalRegistros }} registros</span>
+    <span *ngIf="tab === 'indicadores'"></span>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-guardar" [disabled]="!puedeExportar" (click)="descargarExcel()">
+        <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+      </button>
+      <button type="button" class="btn btn-pdf" [disabled]="!puedeExportar" (click)="descargarPdf()">
+        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="d-none d-print-block mb-3">
+  <h2 class="fs-5 fw-bold m-0">Salud 360 — Reporte de {{ titulo }} · del {{ formatoFecha(rango.desde) }} al {{ formatoFecha(rango.hasta) }}</h2>
+</div>
+
+<div class="s360-card" *ngIf="tab === 'atenciones'">
+  <div class="table-responsive">
+    <table class="table s360-tabla">
+      <thead><tr><th>N.°</th><th>Fecha</th><th>Paciente</th><th>Profesional</th><th>Servicio</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let a of atenciones">
+          <td class="fw-bold">{{ a.codigo }}</td>
+          <td>{{ a.fecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ a.paciente }}</td>
+          <td>{{ a.profesional }}</td>
+          <td>{{ a.servicio || '—' }}</td>
+        </tr>
+        <tr *ngIf="!cargando && atenciones.length === 0"><td colspan="5" class="text-center text-secondary py-4">Sin resultados</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="s360-card" *ngIf="tab === 'citas'">
+  <div class="table-responsive">
+    <table class="table s360-tabla">
+      <thead><tr><th>Código</th><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Profesional</th><th>Servicio</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let c of citas">
+          <td class="fw-bold text-nowrap">{{ c.codigo }}</td>
+          <td class="text-nowrap">{{ c.fecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ c.hora }}</td>
+          <td>{{ c.paciente }}</td>
+          <td>{{ c.profesional }}</td>
+          <td>{{ c.servicio }}</td>
+          <td><span class="s360-badge" [ngClass]="c.estado">{{ c.estado | titlecase }}</span></td>
+        </tr>
+        <tr *ngIf="!cargando && citas.length === 0"><td colspan="7" class="text-center text-secondary py-4">Sin resultados</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<ng-container *ngIf="tab === 'indicadores'">
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Total de citas" [valor]="indicadores?.totalCitas ?? 0" detalle="En el periodo" color="azul"></app-kpi-card></div>
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Atenciones realizadas" [valor]="indicadores?.totalAtenciones ?? 0" detalle="En el periodo" color="morado"></app-kpi-card></div>
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Pacientes atendidos" [valor]="indicadores?.pacientesAtendidos ?? 0" detalle="Pacientes distintos" color="verde"></app-kpi-card></div>
+    <div class="col-sm-6 col-xl-3"><app-kpi-card etiqueta="Citas canceladas" [valor]="citasCanceladas" detalle="En el periodo" color="naranja"></app-kpi-card></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="s360-card h-100">
+        <h2 class="s360-card-titulo">Citas por estado</h2>
+        <div class="table-responsive">
+          <table class="table s360-tabla">
+            <thead><tr><th>Estado</th><th class="text-end">Cantidad</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of indicadores?.citasPorEstado">
+                <td><span class="s360-badge" [ngClass]="c.etiqueta">{{ c.etiqueta | titlecase }}</span></td>
+                <td class="text-end fw-bold">{{ c.cantidad }}</td>
+              </tr>
+              <tr *ngIf="!indicadores"><td colspan="2" class="text-center text-secondary py-4">Sin resultados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="s360-card h-100">
+        <h2 class="s360-card-titulo">Atenciones por servicio</h2>
+        <div class="table-responsive">
+          <table class="table s360-tabla">
+            <thead><tr><th>Servicio</th><th class="text-end">Cantidad</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of indicadores?.atencionesPorServicio">
+                <td>{{ c.etiqueta }}</td>
+                <td class="text-end fw-bold">{{ c.cantidad }}</td>
+              </tr>
+              <tr *ngIf="!indicadores || indicadores.atencionesPorServicio.length === 0">
+                <td colspan="2" class="text-center text-secondary py-4">Sin resultados</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
